@@ -162,7 +162,7 @@ Mat rotateImg_Bl(Mat img, float deg) {
 
 int main()
 {
-	Mat img = imread("Lenna.png", IMREAD_GRAYSCALE);
+	Mat img = imread("images/Lenna.png", IMREAD_GRAYSCALE);
 
 #ifndef ROTATE
 	float scale;
