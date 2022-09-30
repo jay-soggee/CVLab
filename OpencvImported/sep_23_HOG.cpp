@@ -5,7 +5,7 @@ using namespace cv;
 
 #define PI (float)3.141592
 
-//#define DEBUG01
+//#define DEBUG
 
 /* compute convolution w/ some filter to get 2-d gradient */
 int gradiant(Mat img, int** gx, int** gy) {
@@ -46,38 +46,54 @@ int gradiant(Mat img, int** gx, int** gy) {
 /* compute the Orientation Histogram */
 int getOH(int h, int w, int* gx, int* gy, double** hist) {
 
-	for (int i = 0; i < 9; i++)
+	for (int i = 0; i < 36; i++)
 		*(*hist + i) = 0;
 
-	double tot = 0;
-	for (int i = 0; i < h; i++)
-		for (int j = 0; j < w; j++) {
-			int fx = *(gx + i * w + j);
-			int fy = *(gy + i * w + j);
+	for (int ti = 0; ti < 2; ti++)
+		for (int tj = 0; tj < 2; tj++)
+			for (int i = 0; i < h / 2; i++)
+				for (int j = 0; j < w / 2; j++) {
+					int fx = *(gx + (i + ti * h / 2) * w + j + tj * w / 2);
+					int fy = *(gy + (i + ti * h / 2) * w + j + tj * w / 2);
 
-			// compute the L2 magnitude
-			float mag;
-			mag = sqrt(fx * fx + fy * fy);
+					// compute the L2 magnitude
+					float mag;
+					mag = sqrt(fx * fx + fy * fy);
+
+					// compute the phase
+					float dir, deg;
+					dir = atan2(fx, fy);
+					deg = dir * 180.0 / PI;
+					if (deg < 0) deg += 180.0;
+
 #ifdef DEBUG
-			printf("%Lf ", mag);
+					if ((int)(deg / 20.2) > 9) printf("!");
 #endif
-			// compute the phase
-			float dir, deg;
-			dir = atan2(fx, fy);
-			deg = dir * 180.0 / PI;
-			if (deg < 0) deg += 180.0;
 
-			if ((int)(deg / 20.2) > 9) printf("!");
+					// accumulate in histogram
+					* (*hist + ti * 18 + tj * 9 + (int)(deg / 20.0)) += mag;
+				}
 
-			// accumulate in histogram
-			*(*hist + (int)(deg / 20.0)) += mag;
-			tot += mag * mag;
-		}
+
+#ifdef DEBUG_OH
+	for (int i = 0; i < 36; i++) {
+		printf("%15Lf", *(*hist + i));
+	}
+	printf("\n\n");
+#endif
 
 	// normalize
-	tot = sqrt(tot + 0.001);
-	for (int i = 0; i < 9; i++)
-		*(*hist + i) /= tot;
+	double norm = 0.000001;
+	for (int i = 0; i < 36; i++) {
+		norm += *(*hist + i) * *(*hist + i);
+	}
+	norm = sqrt(norm);
+	for (int i = 0; i < 36; i++) {
+		*(*hist + i) /= norm;
+#ifdef DEBUG_OH
+		printf("%15Lf", *(*hist + i));
+#endif
+	}
 
 	return 0;
 }
@@ -142,8 +158,8 @@ int main() {
 	Mat img_tile1(h_tile, w_tile, CV_8UC1);
 
 	double* hist0, * hist1;
-	if (!(hist0 = (double*)calloc(9, sizeof(double)))) return -1;
-	if (!(hist1 = (double*)calloc(9, sizeof(double)))) return -1;
+	if (!(hist0 = (double*)calloc(36, sizeof(double)))) return -1;
+	if (!(hist1 = (double*)calloc(36, sizeof(double)))) return -1;
 
 	double result = 0;
 
@@ -164,11 +180,12 @@ int main() {
 
 			// compute Euclidean distance
 			double dist = 0;
-			for (int hi = 0; hi < 9; hi++) 
+			for (int hi = 0; hi < 36; hi++) {
 				dist += (*(hist0 + hi) - *(hist1 + hi)) * (*(hist0 + hi) - *(hist1 + hi));
+			}
 			dist = sqrt(dist);
 
-			printf("%10Lf", dist);
+			printf("%15Lf", dist);
 			result += dist;
 		}
 		printf("\n\n");
@@ -178,15 +195,15 @@ int main() {
 	
 	printf("total Euclidean distance : %Lf\n", result);
 
-#ifdef DEBUG
+#ifdef DEBUG_OH
 	for (int ti = 0; ti < h_tile; ti++)
 		for (int tj = 0; tj < w_tile; tj++) {
-			img_tile.at<uchar>(ti, tj) = img_gray.at<uchar>(ti, tj);
-			printf("%d ", img_gray.at<uchar>(ti, tj));
+			img_tile0.at<uchar>(ti, tj) = img_gray0.at<uchar>(ti, tj);
+			//printf("%d ", img_gray0.at<uchar>(ti, tj));
 		}
-	printf("\n\n");
+	//printf("\n\n");
 
-	HOG(img_tile);
+	HOG(img_tile0, &hist0);
 #endif
 
 
