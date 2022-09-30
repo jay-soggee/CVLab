@@ -127,7 +127,7 @@ int HOG(Mat img, double** hist) {
 int main() {
 	
 	Mat img_gray0 = imread("images/lecture3.bmp", IMREAD_GRAYSCALE);
-	Mat img_gray1 = imread("images/compare2.bmp", IMREAD_GRAYSCALE);
+	Mat img_gray1 = imread("images/compare1.bmp", IMREAD_GRAYSCALE);
 	int h = img_gray0.rows;
 	int w = img_gray0.cols;
 	int h1 = img_gray1.rows;
@@ -176,7 +176,7 @@ int main() {
 	free(hist0);
 	free(hist1);
 	
-	printf("%Lf", result);
+	printf("total Euclidean distance : %Lf\n", result);
 
 #ifdef DEBUG
 	for (int ti = 0; ti < h_tile; ti++)
