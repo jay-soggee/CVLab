@@ -19,11 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="sep_30_LL_corner.cpp" />
-    <ClCompile Include="sep_30_cornerHarris.cpp" />
+    <ClInclude Include="oct_7_featurPointExtraction\utils.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="sep_30_LL_corner.h" />
+    <ClCompile Include="oct_14_opticalFlow.cpp" />
+    <ClCompile Include="oct_7_featurPointExtraction\utils.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
