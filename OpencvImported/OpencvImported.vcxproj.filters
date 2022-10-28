@@ -15,16 +15,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="oct_7_featurPointExtraction\utils.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
+    <ClCompile Include="oct_28_faceRecog\oct_28_faceRecognition.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="oct_7_featurPointExtraction\utils.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="oct_14_opticalFlow.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
+    <ClInclude Include="oct_28_faceRecog\HOG.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

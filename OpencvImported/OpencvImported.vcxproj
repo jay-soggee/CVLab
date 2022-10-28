@@ -19,11 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="oct_7_featurPointExtraction\utils.h" />
+    <ClCompile Include="oct_28_faceRecog\oct_28_faceRecognition.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="oct_14_opticalFlow.cpp" />
-    <ClCompile Include="oct_7_featurPointExtraction\utils.cpp" />
+    <ClInclude Include="oct_28_faceRecog\HOG.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
