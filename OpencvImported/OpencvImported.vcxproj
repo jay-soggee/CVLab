@@ -22,7 +22,7 @@
     <ClCompile Include="oct_28_faceRecog\oct_28_faceRecognition.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="oct_28_faceRecog\HOG.h" />
+    <ClInclude Include="oct_28_faceRecog\HOGcompare.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

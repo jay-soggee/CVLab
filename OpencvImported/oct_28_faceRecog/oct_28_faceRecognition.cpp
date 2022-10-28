@@ -1,10 +1,10 @@
-#include "HOG.h"
+#include "HOGcompare.h"
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
 
 using namespace cv;
 
-#define MMNORM
+#define USE_MMNORM
 #define DEBUG
 #define DEBUG1
 #define OUT
@@ -40,7 +40,7 @@ void gradient(Mat img, float** gx, float** gy) {
 			*(*gx + i * w + j) = fx;
 			*(*gy + i * w + j) = fy;
 
-#ifdef MMNORM
+#ifdef USE_MMNORM
 			// min-max normalization
 			if (abs(fx) > grad_max)
 				grad_max = abs(fx);
@@ -75,7 +75,7 @@ void gradient(Mat img, float** gx, float** gy) {
 * @param output histogram, the lenth must be 9 * div
 */
 void getOH(float* gx[], float* gy[], 
-	const int h, const int w, 
+	int h, int w, 
 	const int div,
 	OUT double** hist) 
 {
@@ -115,7 +115,9 @@ void getOH(float* gx[], float* gy[],
 int main() {
 
 	Mat img_ref = imread("./images/face_ref.bmp", IMREAD_GRAYSCALE);
-	Mat img_tar = imread("./images/face_tar.bmp", IMREAD_GRAYSCALE);
+	Mat img_tar_color = imread("./images/face_tar.bmp");
+	Mat img_tar;
+	cvtColor(img_tar_color, img_tar, COLOR_BGR2GRAY);
 	int h_ref = img_ref.rows;
 	int w_ref = img_ref.cols;
 	int h_tar = img_tar.rows;
@@ -159,7 +161,6 @@ int main() {
 	ref_norm = sqrtl(ref_norm);
 
 	// compute histogram of target image and simularity between each other.
-	Mat res_sim(h_tar - h_ref + 1, w_tar - w_ref + 1, CV_8UC1);
 	for (int i = h_ref / 2; i <= h_tar - h_ref / 2; i++) 
 		for (int j = w_ref / 2; j <= w_tar - w_ref / 2; j++) {
 			// crop the target image
@@ -192,14 +193,13 @@ int main() {
 			}
 			sim = product / ref_norm / sqrtl(tar_norm);
 
-			res_sim.at<uchar>(i - h_ref / 2, j - w_ref / 2) = (int)(sim * 255);
+			if (sim > 0.89) img_tar_color.at<Vec3b>(i + 1, j + 1)[1] = (uchar)(sim * 256);
 			free(tar_hist);
 			free(crop_tar_grad_y);
 			free(crop_tar_grad_x);
 		}
 
-	imshow("original", img_tar);
-	imshow("result", res_sim);
+	imshow("result", img_tar_color);
 	waitKey(0);
 
 	return 0;
