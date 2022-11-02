@@ -114,6 +114,9 @@ void getOH(float* gx[], float* gy[],
 
 int main() {
 
+	const int DIVISION = 6;
+	const int CROP_VAL = 0.53;
+
 	Mat img_ref = imread("./images/face_ref.bmp", IMREAD_GRAYSCALE);
 	Mat img_tar_color = imread("./images/face_tar.bmp");
 	Mat img_tar;
@@ -139,7 +142,6 @@ int main() {
 	gradient(img_tar, &tar_grad_x, &tar_grad_y);
 
 	// compute histogram of reference image
-	const int division = 2;
 	float** blck_ref_grad_x, ** blck_ref_grad_y;
 	if (!(blck_ref_grad_x = (float**)malloc(sizeof(float*) * h_ref))) return -1;
 	if (!(blck_ref_grad_y = (float**)malloc(sizeof(float*) * h_ref))) return -1;
@@ -148,15 +150,15 @@ int main() {
 		*(blck_ref_grad_y + ti) = ref_grad_y + ti * w_ref;
 	}
 	double* ref_hist;
-	if (!(ref_hist = (double*)calloc(9 * division * division, sizeof(double)))) return -1;
-	getOH(blck_ref_grad_x, blck_ref_grad_y, h_ref, w_ref, division, &ref_hist);
+	if (!(ref_hist = (double*)calloc(9 * DIVISION * DIVISION, sizeof(double)))) return -1;
+	getOH(blck_ref_grad_x, blck_ref_grad_y, h_ref, w_ref, DIVISION, &ref_hist);
 	free(blck_ref_grad_x);
 	free(blck_ref_grad_y);
 	free(ref_grad_x);
 	free(ref_grad_y);
 
 	double ref_norm = 0;
-	for (int i = 0; i < 9 * division * division; i++)
+	for (int i = 0; i < 9 * DIVISION * DIVISION; i++)
 		ref_norm += ref_hist[i] * ref_hist[i];
 	ref_norm = sqrtl(ref_norm);
 
@@ -182,18 +184,21 @@ int main() {
 #endif
 			// get HOG from croped image
 			double* tar_hist;
-			if (!(tar_hist = (double*)calloc(9 * division * division, sizeof(double)))) return -1;
-			getOH(crop_tar_grad_x, crop_tar_grad_y, h_ref, w_ref, division, &tar_hist);
+			if (!(tar_hist = (double*)calloc(9 * DIVISION * DIVISION, sizeof(double)))) return -1;
+			getOH(crop_tar_grad_x, crop_tar_grad_y, h_ref, w_ref, DIVISION, &tar_hist);
 
 			// compare between ref. and target w/ cosine similarity
 			double tar_norm = 0, product = 0, sim;
-			for (int hi = 0; hi < 9 * division * division; hi++) {
+			for (int hi = 0; hi < 9 * DIVISION * DIVISION; hi++) {
 				tar_norm	+= tar_hist[hi] * tar_hist[hi];
 				product		+= ref_hist[hi] * tar_hist[hi];
 			}
 			sim = product / ref_norm / sqrtl(tar_norm);
 
-			if (sim > 0.89) img_tar_color.at<Vec3b>(i + 1, j + 1)[1] = (uchar)(sim * 256);
+			if (sim > CROP_VAL) {
+				img_tar_color.at<Vec3b>(i + 1, j + 1)[1] = (uchar)(sim * 256);
+				rectangle(img_tar_color, { j + 1 - 18, i + 1 - 18 }, { j + 1 + 18, i + 1 + 18 }, { 0, 255, 0 }, 1, 8, 0);
+			}
 			free(tar_hist);
 			free(crop_tar_grad_y);
 			free(crop_tar_grad_x);
