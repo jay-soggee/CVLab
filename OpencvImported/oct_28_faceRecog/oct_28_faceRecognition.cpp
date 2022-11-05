@@ -1,12 +1,10 @@
-#include "HOGcompare.h"
-#include <opencv2/imgproc.hpp>
-#include <opencv2/highgui.hpp>
+#include "oct_28_HOGcompare.h"
 
 using namespace cv;
 
 #define USE_MMNORM
-#define DEBUG
-#define DEBUG1
+//#define DEBUG
+#define DEBUG_R
 #define OUT
 
 #define PI 3.141592
@@ -115,7 +113,7 @@ void getOH(float* gx[], float* gy[],
 int main() {
 
 	const int DIVISION = 6;
-	const int CROP_VAL = 0.53;
+	const double CROP_VAL = 0.53;
 
 	Mat img_ref = imread("./images/face_ref.bmp", IMREAD_GRAYSCALE);
 	Mat img_tar_color = imread("./images/face_tar.bmp");
@@ -196,6 +194,9 @@ int main() {
 			sim = product / ref_norm / sqrtl(tar_norm);
 
 			if (sim > CROP_VAL) {
+#ifdef DEBUG1
+				printf("%Lf\n", sim);
+#endif
 				img_tar_color.at<Vec3b>(i + 1, j + 1)[1] = (uchar)(sim * 256);
 				rectangle(img_tar_color, { j + 1 - 18, i + 1 - 18 }, { j + 1 + 18, i + 1 + 18 }, { 0, 255, 0 }, 1, 8, 0);
 			}
@@ -211,3 +212,92 @@ int main() {
 }
 
 #endif
+
+
+int faceRecog(Mat tar, OUT int* face_x, int* face_y) {
+
+	const int DIVISION = 6;
+	const double CROP_VAL = 0.55;
+
+	Mat img_ref = imread("./images/face_ref.bmp", IMREAD_GRAYSCALE);
+	int h_ref = img_ref.rows;
+	int w_ref = img_ref.cols;
+	int h_tar = tar.rows;
+	int w_tar = tar.cols;
+
+	// compute each gradiant
+	h_ref = h_ref - 2;
+	w_ref = w_ref - 2;
+	h_tar = h_tar - 2;
+	w_tar = w_tar - 2;
+	float* ref_grad_x, * ref_grad_y;
+	if (!(ref_grad_x = (float*)malloc(sizeof(float) * h_ref * w_ref))) return -1;
+	if (!(ref_grad_y = (float*)malloc(sizeof(float) * h_ref * w_ref))) return -1;
+	float* tar_grad_x, * tar_grad_y;
+	if (!(tar_grad_x = (float*)malloc(sizeof(float) * h_tar * w_tar))) return -1;
+	if (!(tar_grad_y = (float*)malloc(sizeof(float) * h_tar * w_tar))) return -1;
+
+	gradient(img_ref, &ref_grad_x, &ref_grad_y);
+	gradient(tar, &tar_grad_x, &tar_grad_y);
+
+	// compute histogram of reference image
+	float** blck_ref_grad_x, ** blck_ref_grad_y;
+	if (!(blck_ref_grad_x = (float**)malloc(sizeof(float*) * h_ref))) return -1;
+	if (!(blck_ref_grad_y = (float**)malloc(sizeof(float*) * h_ref))) return -1;
+	for (int ti = 0; ti < h_ref; ti++) {
+		*(blck_ref_grad_x + ti) = ref_grad_x + ti * w_ref;
+		*(blck_ref_grad_y + ti) = ref_grad_y + ti * w_ref;
+	}
+	double* ref_hist;
+	if (!(ref_hist = (double*)calloc(9 * DIVISION * DIVISION, sizeof(double)))) return -1;
+	getOH(blck_ref_grad_x, blck_ref_grad_y, h_ref, w_ref, DIVISION, &ref_hist);
+	free(blck_ref_grad_x);
+	free(blck_ref_grad_y);
+	free(ref_grad_x);
+	free(ref_grad_y);
+
+	double ref_norm = 0;
+	for (int i = 0; i < 9 * DIVISION * DIVISION; i++)
+		ref_norm += ref_hist[i] * ref_hist[i];
+	ref_norm = sqrtl(ref_norm);
+
+	// compute histogram of target image and simularity between each other.
+	double max_sim = DBL_MIN;
+	for (int i = h_ref / 2; i <= h_tar - h_ref / 2; i++)
+		for (int j = w_ref / 2; j <= w_tar - w_ref / 2; j++) {
+			// crop the target image
+			float** crop_tar_grad_x, ** crop_tar_grad_y;
+			if (!(crop_tar_grad_x = (float**)malloc(sizeof(float*) * h_ref))) return -1;
+			if (!(crop_tar_grad_y = (float**)malloc(sizeof(float*) * h_ref))) return -1;
+			for (int ti = 0; ti < h_ref; ti++) {
+				*(crop_tar_grad_x + ti) = tar_grad_x + (ti + i - h_ref / 2) * w_tar + (j - w_ref / 2);
+				*(crop_tar_grad_y + ti) = tar_grad_y + (ti + i - h_ref / 2) * w_tar + (j - w_ref / 2);
+			}
+
+			// get HOG from croped image
+			double* tar_hist;
+			if (!(tar_hist = (double*)calloc(9 * DIVISION * DIVISION, sizeof(double)))) return -1;
+			getOH(crop_tar_grad_x, crop_tar_grad_y, h_ref, w_ref, DIVISION, &tar_hist);
+
+			// compare between ref. and target w/ cosine similarity
+			double tar_norm = 0, product = 0, sim;
+			for (int hi = 0; hi < 9 * DIVISION * DIVISION; hi++) {
+				tar_norm += tar_hist[hi] * tar_hist[hi];
+				product += ref_hist[hi] * tar_hist[hi];
+			}
+			sim = product / ref_norm / sqrtl(tar_norm);
+			
+			if (sim > max_sim) {
+				*face_x = j + 1;
+				*face_y = i + 1;
+				max_sim = sim;
+			}
+			free(tar_hist);
+			free(crop_tar_grad_y);
+			free(crop_tar_grad_x);
+		}
+	free(tar_grad_x);
+	free(tar_grad_y);
+	if (max_sim < CROP_VAL) return -1;
+	return 0;
+}
