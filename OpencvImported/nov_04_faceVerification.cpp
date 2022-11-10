@@ -117,8 +117,7 @@ int main() {
 		imshow("camera", img);
 		imshow("captured face", ref_face);
 #endif
-		key = waitKey(20);
-	} while (key == -1);
+	} while (waitKey(20) == -1);
 
 	do {
 		capture >> frame;
