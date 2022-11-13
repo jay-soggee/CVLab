@@ -19,11 +19,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="nov_04_faceVerification.cpp" />
-    <ClCompile Include="oct_28_faceRecog\oct_28_faceRecognition.cpp" />
+    <Xml Include="nov_11_facialLandmarks\haar_roboman_ff_alt2.xml" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="oct_28_faceRecog\oct_28_HOGcompare.h" />
+    <None Include="nov_11_facialLandmarks\roboman-landmark-model.bin" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="nov_11_facialLandmarks\face_landmarks.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -140,13 +142,14 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <Optimization>MaxSpeed</Optimization>
+      <AdditionalIncludeDirectories>C:\Users\Jay\workspace\sdm\src\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opencv_world460.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opencv_world345.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

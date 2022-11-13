@@ -15,16 +15,18 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="nov_04_faceVerification.cpp">
+    <Xml Include="nov_11_facialLandmarks\haar_roboman_ff_alt2.xml">
       <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="oct_28_faceRecog\oct_28_faceRecognition.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
+    </Xml>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="oct_28_faceRecog\oct_28_HOGcompare.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
+    <None Include="nov_11_facialLandmarks\roboman-landmark-model.bin">
+      <Filter>소스 파일</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="nov_11_facialLandmarks\face_landmarks.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
